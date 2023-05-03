@@ -1,3 +1,61 @@
 ﻿@page "/"
+@using System.Text.RegularExpressions;
 
-<h1>Hello, world!</h1>
+<div class="container mt-5">
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Support</h2>
+        </div>
+        <div class="card-body">
+            <div class="overflow-auto">
+                <ul class="list-group">
+                    @foreach (var item in history)
+                    {
+                        <li class="list-group-item">@item</li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="Input" @onkeyup="enter" />
+                <button class="btn btn-primary" @onclick="makePrediction">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string Result = "Nothing";
+    private string Input = "";
+    private List<string> history = new();
+    public Regex Regex = new(@"[\D]");
+
+    private void enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            makePrediction();
+        }
+        
+    }
+    private void makePrediction()
+    {
+        if (!string.IsNullOrEmpty(Input))
+        {
+            //Load sample data
+            var sampleData = new HalfHourModel.ModelInput()
+                {
+                    Col0 = $"{Input}",
+                };
+
+            //Load model and predict output
+            var prediction = HalfHourModel.Predict(sampleData);
+            var res = prediction.PredictedLabel;
+            history.Add($"{Input} - {res}");
+            Input = "";
+        }
+    }
+
+}
